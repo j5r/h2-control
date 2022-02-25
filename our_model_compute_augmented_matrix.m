@@ -18,13 +18,19 @@ for row = 1:n_states
     %
     for col = 1:n_states
         [theta_,thetaHat_,rho_,lambda_] = map1to4(col,Struct);
+        %
         indicator_obs = (theta_==thetaHat_)*(theta_==lambda_)*(rho_==0)*...
             (theta_<=Struct.No);
         indicator_unobs = (theta_>Struct.No)*(thetaHat_>Struct.No)*...
             (rho_==min(Struct.T-1,rho+1))*(lambda_==lambda);
+        %
         augm_Prob(row,col) = Struct.Prob(theta,theta_)*(indicator_obs + ...
             indicator_unobs*Struct.mu(thetaHat_,rho_+1,lambda_));
     end
 end
+%
 Struct.augm_Prob = augm_Prob;
+%
+assert(all(abs(sum(augm_Prob,2)-1)<eps(1e2)),...
+    'Something went wrong with the Augmented Matrix. Its rows does not sum up to one.');
 end
