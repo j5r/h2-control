@@ -1,16 +1,17 @@
 % By Junior R. Ribeiro, jrodrib@usp.br, 18-fev-2022
 %
-%   Struct = our_model_compute_augmented_matrix(Struct)
+%   Struct = our_model_compute_augmented_probability_matrix(Struct)
 %
 %     This function computes the augmented transition probability matrix,
 %     taking into account the distribution set 'mu' and 'Prob', and based
 %     on 'valid_states'.
 %
 
-function Struct = our_model_compute_augmented_matrix(Struct)
+function Struct = our_model_compute_augmented_probability_matrix(Struct)
 assert(isfield(Struct,'valid_states'),...
     'The Structure does not have the field valid_states.');
 %
+fprintf('\n --> OUR MODEL: COMPUTE AUGMENTED PROBABILITY MATRIX...\n')
 n_states = size(Struct.valid_states,1);
 augm_Prob = zeros(n_states,n_states);
 for row = 1:n_states
@@ -33,4 +34,5 @@ Struct.augm_Prob = augm_Prob;
 %
 assert(all(abs(sum(augm_Prob,2)-1)<eps(1e2)),...
     'Something went wrong with the Augmented Matrix. Its rows does not sum up to one.');
+fprintf('...DONE.\n');
 end

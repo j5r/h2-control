@@ -3,39 +3,23 @@
 %
 % Struct = our_model_validate_states(Struct,i_will_overwrite_pihat_or_mu)
 %
-%   This function creates a new field on Struct, called 'valid_states'.
-%   These valid_states stores the tuples (theta,thetaHat,rho,lambda) which
-%   does make sense according to their definitions. Also, the validation
-%   takes into account the communication between these tuple-states in the
-%   sense of a Markov chain, that is, the states which are never visited
-%   are discarded.
+%   This function makes the validation of the composed states (theta,
+%   thetaHat, rho, lambda) taking into account the communication between 
+%   them in the sense of a Markov chain, that is, the states which are
+%   never visited are discarded.
 %
 %   If you intend to overwite 'pihat' or 'mu', for instance, via LMIs, type
 %   true for the 2nd argument. Otherwise, the standard value is false.
 %
 
 function Struct = our_model_validate_states(Struct,i_will_overwrite_pihat_or_mu)
-fprintf('...OUR MODEL VALIDATE STATES\n');
+fprintf('\n --> OUR MODEL: VALIDATE STATES...\n');
 if nargin == 1
     i_will_overwrite_pihat_or_mu = false;
 end
-valid_states = [];
+Struct = our_model_create_phisical_states(Struct);
 %
-% validating the compatible states
-for theta = 1:Struct.N
-    for thetaHat = 1:Struct.N
-        for rho = 0:Struct.T-1
-            for lambda = 1:Struct.No
-                indicator_obs = (theta==thetaHat)*(theta==lambda)*...
-                    (theta<=Struct.No)*(rho==0);
-                indicator_unobs = (theta>Struct.No)*(thetaHat>Struct.No)*(rho>0);
-                if indicator_obs + indicator_unobs > 0
-                    valid_states = [valid_states; theta,thetaHat,rho,lambda];
-                end
-            end
-        end
-    end
-end
+valid_states = Struct.valid_states;
 %
 % validating the comunicating states, regarding theta
 pi = Struct.pi;
@@ -45,7 +29,7 @@ end
 thetas_to_discard = find(sum(pi)==0);
 %
 for theta = thetas_to_discard
-    valid_states( find(valid_states(:,1)==theta) ,:) = [];
+    valid_states( valid_states(:,1)==theta ,:) = [];
 end
 %
 Struct.valid_states = valid_states;
@@ -56,18 +40,30 @@ Struct.valid_states = valid_states;
 % below discards some states that can be visited after changing pihat or
 % mu. These discarded states will be missing in your set 'valid_states'.
 if ~i_will_overwrite_pihat_or_mu
-%     validating the states which are never visited
+    % validating the states which are never visited
     Struct = our_model_compute_augmented_distribution(Struct);
-    Struct = our_model_compute_augmented_matrix(Struct);
-    transient_states = find(sum(Struct.augm_Prob)==0);
-    never_starts_the_Mkchain_states = find(Struct.augm_pi==0);
-    never_visited_states = intersect(never_starts_the_Mkchain_states,...
-        transient_states);
+    Struct = our_model_compute_augmented_probability_matrix(Struct);
+    %
+    % finding the states that are never visited
+    n_augm_states = size(Struct.augm_Prob,1);
+    sum_augm_Prob = zeros(n_augm_states, n_augm_states);
+    for k = 0:n_augm_states
+        sum_augm_Prob = Struct.augm_Prob^k;
+    end
+    %
+    never_visited_states = ~ sum(Struct.augm_pi * sum_augm_Prob);
+    %
     valid_states(never_visited_states,:) = [];
+    %
     Struct.valid_states = valid_states;
+    %
+    % dropping out these fields
     Struct = rmfield(Struct,{'augm_pi','augm_Prob'});
+    disp(' *** DROPPING OUT THE OLD FIELDS augm_pi AND augm_Prob.');
+    %
+    % recomputing those fields dropped
     Struct = our_model_compute_augmented_distribution(Struct);
-    Struct = our_model_compute_augmented_matrix(Struct);
+    Struct = our_model_compute_augmented_probability_matrix(Struct);
 end
-fprintf('...DONE\n\n');
+fprintf('...DONE.\n');
 end

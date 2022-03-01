@@ -22,37 +22,38 @@ if isstruct(A) && nargin == 1
     No = S.No;
     clear S;
 end
-
+%
+fprintf('\n --> PARSE DATA...\n');
 validate_parse_data(A,B,E,C,D,Prob,pi,pihat,T,No);
-
+%
 % x(k+1) = A(theta(k))*x(k) + B(theta(k))*u(k) + E(theta(k))*w(k)
 Struct.A = A; % Ax
 Struct.B = B; % Bu
 Struct.E = E; % Ew
-
+%
 %   z(k) = C(theta(k))*x(k) + D(theta(k))*u(k)
 Struct.C = C; % Cx
 Struct.D = D; % Du
-
+%
 % The plant's transition probability matrix (for theta)
 % It will be used to build the Augmented Probability Matrix
 Struct.Prob = Prob;
-
-% Time 'slack' (the clock is rho); T should be >= 2.
+%
+% Time 'slack' (the clock is rho); T must be >= 2.
 Struct.T = T;
-
+%
 N = size(Prob,1);
 Struct.N = N;
-
+%
 % Number of observable states
 Struct.No = No;
-
+%
 % Initial distribution of theta
 % It will be used to build the Augmented Initial Distribution
 %
 % pi(theta)
 Struct.pi = pi(:)';
-
+%
 % Initial distribution of thetaHat given theta
 % It will be used to build the Augmented Initial Distribution
 % These probabilities can be optimized via LMIs, instead of being
@@ -61,7 +62,7 @@ Struct.pi = pi(:)';
 %
 % pihat(thetaHat, theta)
 Struct.pihat = pihat;
-
+%
 % Transition distribution of thetaHat given rho and lambda
 % It will be used to build the Augmented Probability Matrix
 % These probabilities can be optimized via LMIs, instead of being
@@ -70,8 +71,8 @@ Struct.pihat = pihat;
 %
 % mu(thetaHat, rho, lambda)
 Struct.mu = zeros(N,T,No);
-
-
+%
+%
 % Computing the propagate distributions (mu),
 % for rho=1:T-2 (matlab syntax 2:T-1)
 for lambda = 1:No
@@ -86,8 +87,8 @@ for lambda = 1:No
         Struct.mu(:,rho,lambda) = h;
     end
 end
-
-
+%
+%
 % Computing the limit distributions (mu),
 % for rho=T-1 (matlab syntax T)
 for lambda = 1:No
@@ -96,19 +97,24 @@ for lambda = 1:No
     if sum(d)==0
         d = ([1:N] > No)/(N-No); % uniform over U
     end
-    d = d/sum(d);
-    d = d * (Prob^1e4);
-    d(1:No) = 0;
-    if sum(d)==0
-        d = ([1:N] > No)/(N-No); % uniform over U
+    for k = 1:1e4 % repeating the process
+        d = d/sum(d);
+        d = d * Prob;
+        d(1:No) = 0;
+        if sum(d)==0
+            d = ([1:N] > No)/(N-No); % uniform over U
+        end
+        d = d/sum(d);
     end
-    d = d/sum(d);
     Struct.mu(:,T,lambda) = d;
 end
-
+%
+fprintf('...DONE.\n');
 end
-
-
+%
+%
+%
+%
 function validate_parse_data(A,B,E,C,D,Prob,pi,pihat,T,No)
 n = size(A,1);
 m = size(B,2);

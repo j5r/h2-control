@@ -11,6 +11,7 @@ function Struct = our_model_compute_augmented_distribution(Struct)
 assert(isfield(Struct,'valid_states'),...
     'The Structure does not have the field valid_states.');
 %
+fprintf('\n --> OUR MODEL: COMPUTE AUGMENTED DISTRIBUTION...\n')
 n_states = size(Struct.valid_states,1);
 augm_pi = zeros(1,n_states);
 for index = 1:n_states
@@ -23,4 +24,5 @@ for index = 1:n_states
         indicator_unobs*Struct.pihat(thetaHat,Struct.No+1));
 end
 Struct.augm_pi = augm_pi;
+fprintf('...DONE.\n');
 end

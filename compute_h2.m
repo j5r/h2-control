@@ -1,10 +1,22 @@
+%
+% By Junior R. Ribeiro, jrodrib@usp.br, 01-mar-2022
+%
+% Struct = compute_h2(Struct)
+%
+%   This function computes the H2 cost by controllability and observability
+%   gramian, for the lmi_solution and riccati_solution.
+%
+
 function S = compute_h2(S)
-disp('...COMPUTE H2...')
+fprintf('\n --> COMPUTE H2...\n')
 validate_compute_h2(S);
+%
 S = compute_h2_for_lmi_solution(S);
+%
 S = compute_h2_for_ricatti_solution(S);
-disp('...DONE.');
+fprintf('...DONE.\n');
 end
+%
 %
 %
 %
@@ -27,6 +39,7 @@ if isfield(Struct,'riccati_solution')
 end
 %
 end
+%
 %
 %
 %
@@ -71,6 +84,7 @@ if isfield(lmi_solution,'ctrl_gramian')
 end
 %
 end
+%
 %
 %
 %

@@ -1,7 +1,7 @@
 % test_for_distributions
-clc
-N = randi([40,60]);
-T = randi([3,6]);
+clear,clc
+N = randi([4,6]);
+T = 50;randi([3,6]);
 No = randi([2,N-2]);
 fprintf('N=%d  T=%d  No=%d',N,T,No);
 %%%
@@ -13,6 +13,8 @@ q_old = zeros(N,T,No);
 q_new  = zeros(N,T,No);
 for lambda = 1:No
     distribution = (1:N==lambda) * P; % 1 time step
+    distribution(1:No) = 0;
+    distribution = distribution/sum(distribution);
     for rho = 1
         % starting the first distribution 
         q_old(:,rho,lambda) = distribution;
@@ -23,7 +25,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %**********% the road so far
 for lambda = 1:No %...................lambda
-    distribution = 1:N==lambda;
+    distribution = q_old(:,1,lambda)';
     for rho = 2:T %...................rho
         distribution = distribution * P; % updating
         distribution(1:No) = 0;
@@ -58,8 +60,8 @@ end
 %
 %
 %
-q_old;
-q_new;
+q_old,
+q_new,
 norm_of_difference = norm(q_old(:) - q_new(:))
 
 

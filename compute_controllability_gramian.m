@@ -1,18 +1,29 @@
-function S = compute_controllability_gramian(S,max_iteration)
-fprintf('...COMPUTE CONTROLLABILITY GRAMIAN... \n')
-validate_compute_controllability_gramian(S)
 %
-% lmis
-if isfield(S,'lmi_solution')
-    S = compute_controllability_gramian_for_lmi_solution(S);
-end
+% By Junior R. Ribeiro, jrodrib@usp.br, 01-mar-2022
+%
+% Struct = compute_controllability_gramian(Struct,max_iteration)
+%
+%   This function computes the controllability gramian for the
+%   lmi_solution and riccati_solution.
+%
+
+function S = compute_controllability_gramian(S,max_iteration)
+fprintf('\n --> COMPUTE CONTROLLABILITY GRAMIAN... \n')
+validate_compute_controllability_gramian(S)
 %
 % riccati
 if isfield(S,'riccati_solution')
-    S = compute_controllability_gramian_for_riccati_solution(S);
+    S = compute_controllability_gramian_for_riccati_solution(S,max_iteration);
 end
-disp('...DONE')
+%
+% lmis
+if isfield(S,'lmi_solution')
+    S = compute_controllability_gramian_for_lmi_solution(S,max_iteration);
 end
+fprintf('...DONE.\n')
+end
+%
+%
 %
 %
 function validate_compute_controllability_gramian(Struct)
@@ -27,8 +38,9 @@ assert(isfield(lmi_solution,'cloopA'),...
 end
 %
 %
-
-function S = compute_controllability_gramian_for_lmi_solution(S)
+%
+%
+function S = compute_controllability_gramian_for_lmi_solution(S,max_iteration)
 %
 n_states = size(S.valid_states,1);
 n = size(S.A,1);
@@ -36,9 +48,6 @@ Sc = zeros(n, n, n_states);
 %
 % constants
 tolerance = 1e-10;
-if nargin == 1
-    max_iteration = 5e2;
-end
 INF = 1e100;
 %
 %
@@ -75,7 +84,7 @@ fprintf('   [%d]           [%g]\n',iterations, error_);
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('LMI SOLUTION DONE');
+fprintf('#LMI SOLUTION# DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration
@@ -85,7 +94,9 @@ fprintf('.\n\n');
 end
 %
 %
-function S = compute_controllability_gramian_for_riccati_solution(S)
+%
+%
+function S = compute_controllability_gramian_for_riccati_solution(S,max_iteration)
 %
 n_states = S.N;
 n = size(S.A,1);
@@ -93,9 +104,6 @@ Sc = zeros(n, n, n_states);
 %
 % constants
 tolerance = 1e-10;
-if nargin == 1
-    max_iteration = 5e2;
-end
 INF = 1e100;
 %
 %
@@ -131,7 +139,7 @@ fprintf('   [%d]           [%g]\n',iterations, error_);
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('RICCATI SOLUTION DONE');
+fprintf('#RICCATI SOLUTION# DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration

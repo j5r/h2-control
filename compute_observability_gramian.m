@@ -1,5 +1,14 @@
+%
+% By Junior R. Ribeiro, jrodrib@usp.br, 01-mar-2022
+%
+% Struct = compute_observability_gramian(Struct,max_iteration)
+%
+%   This function computes the observability gramian for the
+%   lmi_solution and riccati_solution.
+%
+
 function S = compute_observability_gramian(S,max_iteration)
-fprintf('...COMPUTE OBSERVABILITY GRAMIAN... \n')
+fprintf('\n --> COMPUTE OBSERVABILITY GRAMIAN... \n')
 validate_compute_observability_gramian(S)
 if nargin == 1
     max_iteration = 5e2;
@@ -9,7 +18,7 @@ S = compute_observability_gramian_for_riccati_solution(S,max_iteration);
 %
 S = compute_observability_gramian_for_lmi_solution(S,max_iteration);
 %
-disp('...DONE.')
+fprintf('...DONE.\n')
 end
 %
 %
@@ -69,7 +78,7 @@ fprintf('   [%d]           [%g]\n',iterations, error_);
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('LMI SOLUTION DONE');
+fprintf('#LMI SOLUTION# DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration
@@ -124,7 +133,7 @@ fprintf('   [%d]           [%g]\n',iterations, error_);
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('RICCATI SOLUTION DONE');
+fprintf('#RICCATI SOLUTION# DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration

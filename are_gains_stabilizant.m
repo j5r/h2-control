@@ -11,7 +11,7 @@
 
 function Struct = are_gains_stabilizant(Struct)
 %
-fprintf('...ARE GAINS STABILIZANT...\n')
+fprintf('\n --> ARE GAINS STABILIZANT...\n')
 validate_are_gains_stabilizant(Struct)
 %
 % lmis
@@ -20,8 +20,10 @@ Struct = are_lmi_gains_stabilizant(Struct);
 % riccati
 Struct = are_riccati_gains_stabilizant(Struct);
 %
-fprintf('...DONE.\n\n');
+fprintf('...DONE.\n');
 end
+%
+%
 %
 %
 function validate_are_gains_stabilizant(Struct)
@@ -31,6 +33,8 @@ assert(isfield(Struct,'valid_states'),...
 assert(isfield(Struct,'lmi_solution') || isfield(Struct,'riccati_solution'),...
     'The Structure does not have the field "K" (gains).');
 end
+%
+%
 %
 %
 function Struct = are_lmi_gains_stabilizant(Struct)
@@ -51,6 +55,8 @@ if isfield(Struct,'lmi_solution')
     Struct.lmi_solution.max_eigs_opA_Osvaldo = max(abs(eig( Struct.lmi_solution.operatorA_Osvaldo )));
 end
 end
+%
+%
 %
 %
 function Struct = are_riccati_gains_stabilizant(Struct)

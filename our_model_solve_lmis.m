@@ -27,7 +27,7 @@ function Struct = our_model_solve_lmis(Struct)
 assert(isfield(Struct,'valid_states'),...
     'The Structure does not have the field valid_states.');
 %
-fprintf('...OUR MODEL SOLVE LMIS...\n');
+fprintf('\n --> OUR MODEL: SOLVE LMIS...\n');
 %
 T = Struct.T;
 N = Struct.N;
@@ -37,12 +37,11 @@ n_states = size(Struct.valid_states,1);
 constraints = [];
 yalmip('clear');
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Allocating LMI Vars &&
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Computing the
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% objective function &&
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% var G positive-def.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Allocating LMI Vars &&
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Computing the objective function &&
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% making variable G positive-definite.
 %
-n_R = [size(Struct.A,1), size(Struct.A,1)];
+n_R = [size(Struct.A,1), size(Struct.A,1)]; % dimension of the variables
 n_W = [size(Struct.C,1), size(Struct.C,1)];
 n_G = [size(Struct.A,1), size(Struct.A,1)];
 n_F = [size(Struct.B,2), size(Struct.B,1)];
@@ -53,42 +52,44 @@ for ell = 1:n_states
     objective_function = objective_function + trace(LMI_W{ell});
 end
 %
+% allocating variables only if the state is valid
 for thetaHat = 1:N
-    for rho = 1:T
+    for rho = 0:T-1
         for lambda = 1:No
-            intersection_with_valids = intersect(Struct.valid_states(:,2:4), [thetaHat, rho-1, lambda], 'rows');
+            intersection_with_valids = intersect(Struct.valid_states(:,2:4), [thetaHat, rho, lambda], 'rows');
             if ~isempty(intersection_with_valids) 
                 % allocating only if it is valid
-                LMI_G{thetaHat,rho,lambda} = sdpvar(n_G(1), n_G(2));                
-                LMI_F{thetaHat,rho,lambda} = sdpvar(n_F(1), n_F(2));
+                LMI_G{thetaHat,rho+1,lambda} = sdpvar(n_G(1), n_G(2));                
+                LMI_F{thetaHat,rho+1,lambda} = sdpvar(n_F(1), n_F(2));
                 % var G being positive-definite
-                constraints = [constraints, LMI_G{thetaHat,rho,lambda} >= 0];
+                constraints = [constraints, LMI_G{thetaHat,rho+1,lambda} >= 0];
             end
         end
     end
 end
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Constraints of the LMI
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Constraints of the LMI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                   
 %%%%%%%%%%%%% In order to turn off some LMIs, we compute a scalar to
 %%%%%%%%%%%%% multiply them. If some state 'ell' is never visited, its
 %%%%%%%%%%%%% propagate distribution is always zero, and so, we multiply
 %%%%%%%%%%%%% the respective LMI by the sum of its probability through
 %%%%%%%%%%%%% time.
-%%%%%%%%%%%%%  
-summation_P = zeros(n_states, n_states);
+%
+% weights <- augm_pi * [augm_Prob^0 + augm_Prob^1 + ... + augm_Prob^n_states]
+summation_augm_P = zeros(n_states, n_states);
 for ell = 0:n_states
-    summation_P =  summation_P + Struct.augm_Prob^ell ;
+    summation_augm_P =  summation_augm_P + Struct.augm_Prob^ell ;
 end
- weights = (Struct.augm_pi(:)' * summation_P);
-%%%%%%%%%%%%% 
-%%%%%%%%%%%%% 
+ weights = (Struct.augm_pi(:)' * summation_augm_P);
+%
+%
 for ell = 1:n_states
     [theta,thetaHat,rho,lambda] = map1to4(ell, Struct);
     %
     % operator D_ell(R), summation
-    D_R_ell = zeros(n_R(1),n_R(1));
+    D_R_ell = zeros(n_R(1),n_R(2));
     for i = 1:n_states
         D_R_ell = D_R_ell + Struct.augm_Prob(i,ell) * LMI_R{i};
     end
@@ -98,25 +99,24 @@ for ell = 1:n_states
     % LMI blocks regarding R
     blk_R11 = LMI_R{ell} - Struct.augm_pi(ell) * Struct.E(:,:,theta) * Struct.E(:,:,theta)';
     blk_R12 = Struct.A(:,:,theta) * LMI_G{thetaHat,rho+1,lambda} + Struct.B(:,:,theta) *  LMI_F{thetaHat,rho+1,lambda};    
+    %
     % LMI blocks regarding W
     blk_W11 = LMI_W{ell};
     blk_W12 = Struct.C(:,:,theta) * LMI_G{thetaHat,rho+1,lambda} + Struct.D(:,:,theta) *  LMI_F{thetaHat,rho+1,lambda};
     %    
-    %%%%%%%%%%%% adding constraints
+    % adding constraints
     constraints = [constraints, weights(ell) * [ blk_R11,  blk_R12; ...
                                           blk_R12',  blk__22] >= 0]; 
     constraints = [constraints,  [ blk_W11,  blk_W12; ...
                                   blk_W12', blk__22] >= 0];    
 end
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SOLVING
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SOLVING
+% 
 solvesdp(constraints,objective_function);
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Retrieving solution
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RETRIEVING SOLUTION
+%
 trace_W = 0;
 for ell = 1:n_states
     [~,thetaHat,rho,lambda] = map1to4(ell,Struct);
@@ -131,12 +131,11 @@ s.F = F;
 s.G = G;
 s.R = R;
 s.W = W;
-lmi_.FGRW = s;
-lmi_.K = K;
-lmi_.trace_W = trace_W;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Computing closed loop
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% matrices
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+lmi_struct.FGRW = s;
+lmi_struct.K = K;
+lmi_struct.trace_W = trace_W;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPUTING CLOSED LOOP MATRICES
+%
 n = size(Struct.A,1);
 r = size(Struct.C,1);
 cloopA = zeros(n, n, n_states);
@@ -146,9 +145,9 @@ for ell = 1:n_states
     cloopA(:,:,ell) = Struct.A(:,:,theta) + Struct.B(:,:,theta) * K(:,:,thetaHat,rho+1,lambda);
     cloopC(:,:,ell) = Struct.C(:,:,theta) + Struct.D(:,:,theta) * K(:,:,thetaHat,rho+1,lambda);
 end
-lmi_.cloopA = cloopA;
-lmi_.cloopC = cloopC;
-Struct.lmi_solution = lmi_;
+lmi_struct.cloopA = cloopA;
+lmi_struct.cloopC = cloopC;
+Struct.lmi_solution = lmi_struct;
 %
-fprintf('...DONE.\n\n');
+fprintf('...DONE.\n');
 end

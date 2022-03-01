@@ -15,6 +15,7 @@ else
     assert( N > 2 ,'N should be > 2.');
 end
 %
+fprintf('\n --> GENERATE SAMPLE...\n')
 n = randi([3,6]);  % A(nxn)
 w = randi([2,n-1]); % E(nxw)
 %
@@ -50,4 +51,5 @@ pihat(randi([No+1,N]), sum(pihat,1)==0) = 1; % if some row is null
 pihat = pihat./sum(pihat,1);
 %
 Struct = parse_data(A,B,E,C,D,Prob,pi,pihat,T,No);
+fprintf('...DONE.\n');
 end
