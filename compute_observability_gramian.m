@@ -73,12 +73,12 @@ while error_ > tolerance && iterations < max_iteration
 end
 S.lmi_solution.obsv_gramian = So;
 disp('{iterations, norm(So - previousSo)}')
-fprintf('   [%d]           [%g]\n',iterations, error_);
+fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('#LMI SOLUTION# DONE');
+fprintf(' ****** LMI SOLUTION DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration
@@ -128,12 +128,12 @@ while error_ > tolerance && iterations < max_iteration
 end
 S.riccati_solution.obsv_gramian = So;
 disp('{iterations, norm(So - previousSo)}')
-fprintf('   [%d]           [%g]\n',iterations, error_);
+fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
     warning('Gramian went to infinity.');
 end
-fprintf('#RICCATI SOLUTION# DONE');
+fprintf(' ****** RICCATI SOLUTION DONE');
 if error_ <= tolerance
     fprintf(' BY RESIDUE');
 elseif iterations >= max_iteration

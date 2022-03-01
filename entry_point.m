@@ -18,9 +18,9 @@ Struct = our_model_solve_lmis(Struct); %OK---------------------------------
 %
 Struct = compute_riccati_gains(Struct); %OK--------------------------------
 %
-Struct = compute_controllability_gramian(Struct,1e3); %OK------------------
+Struct = compute_controllability_gramian(Struct,1e5); %OK------------------
 %
-Struct = compute_observability_gramian(Struct,1e3); %OK--------------------
+Struct = compute_observability_gramian(Struct,1e5); %OK--------------------
 %
 Struct = are_gains_stabilizant(Struct); %OK--------------------------------
 %

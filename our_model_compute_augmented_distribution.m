@@ -24,5 +24,7 @@ for index = 1:n_states
         indicator_unobs*Struct.pihat(thetaHat,Struct.No+1));
 end
 Struct.augm_pi = augm_pi;
+assert(  abs(sum(augm_pi)-1) < eps(1e2)  ,...
+    'Something went wrong with the Augmented Distribution. It does not sum up to one.');
 fprintf('...DONE.\n');
 end

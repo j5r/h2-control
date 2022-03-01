@@ -59,7 +59,7 @@ while error_ > tolerance && iterations < max_iteration
 end
 %
 disp('{iterations, norm(X - previousX)}')
-fprintf('   [%d]           [%g]\n',iterations, error_);
+fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 % computing gains
 for i = 1:n_states
