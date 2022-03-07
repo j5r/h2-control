@@ -122,7 +122,7 @@ for rep = 1:montecarlo.repetitions
                         end
                     end
                     
-                    thetaHat = find(rand < cumsum(distrib_thetaHat), 1);
+                    thetaHat = sum(cumsum(distrib_thetaHat) < rand) + 1;
                     %
                     index = map4to1(theta,thetaHat,rho,lambda,S);
                     %

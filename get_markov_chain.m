@@ -33,7 +33,7 @@ end
 if nargin > 3 && ~isempty(init_distrib)
     assert( size(ProbMatrix, 1) == numel(init_distrib),...
         'init_distrib size and ProbMatrix size do not match.')
-    init_state = find(rand < cumsum(init_distrib), 1);
+    init_state = sum(cumsum(init_distrib) < rand) + 1;
 end
 
 if isempty(msg)
@@ -45,7 +45,7 @@ assert(init_state <= size(ProbMatrix,1), msg)
 states = zeros(1,t_max+1);
 states(1) = init_state;
 for k=1:t_max
-    states(k+1) = find(rand < cumsum(ProbMatrix(states(k),:)), 1);
+    states(k+1) = sum(cumsum(ProbMatrix(states(k),:)) < rand) + 1;
 end
 MarkovStates = states;
 end
