@@ -86,7 +86,6 @@ montecarlo = S.montecarlo;
 lmi_solution = S.lmi_solution;
 %
 H2 = zeros(1,montecarlo.repetitions);
-z = zeros(size(S.C,1),1);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
@@ -94,39 +93,50 @@ for rep = 1:montecarlo.repetitions
     for mc = 1:montecarlo.MC
         for theta0 = find(S.pi)
             mkchain = get_markov_chain(S.Prob,montecarlo.horizon,theta0);
-            for e = 1:size(S.E,2)
-                z = z*0;                
+            for e = 1:size(S.E,2)              
                 x = x*0;
                 rho = 0;
-                lambda = 1;
-                for k = 1:numel(mkchain)
+                lambda = 1;                
+                %%%% FOR K == 1
+                theta = mkchain(1);
+                theta_is_obs = theta <= S.No;
+                %
+                rho = 0*(theta_is_obs) + min(S.T-1,rho+1)*(~theta_is_obs);
+                lambda = theta*(theta_is_obs) + lambda*(~theta_is_obs);
+                %
+                if theta_is_obs
+                    distrib_thetaHat = S.pihat(:,theta);
+                else
+                    distrib_thetaHat = S.pihat(:,S.No+1);
+                end
+                %                
+                thetaHat = sum(cumsum(distrib_thetaHat) < rand) + 1;
+                %
+                index = map4to1(theta,thetaHat,rho,lambda,S);
+                %
+                x = lmi_solution.cloopA(:,:,index)*x + S.E(:,e,theta);
+                z  = lmi_solution.cloopC(:,:,index)*x;
+                h2 = h2 + z'*z;
+                %
+                %%%% FOR K  > 1                
+                for k = 2:numel(mkchain)
                     theta = mkchain(k);
                     theta_is_obs = theta <= S.No;
                     %
                     rho = 0*(theta_is_obs) + min(S.T-1,rho+1)*(~theta_is_obs);
                     lambda = theta*(theta_is_obs) + lambda*(~theta_is_obs);
                     %
-                    if k==1
-                        if theta_is_obs
-                            distrib_thetaHat = S.pihat(:,theta);
-                        end
-                        if ~theta_is_obs
-                            distrib_thetaHat = S.pihat(:,S.No+1);
-                        end
+                    if theta_is_obs
+                        distrib_thetaHat = [1:S.N] == theta;
                     else
-                        if theta_is_obs
-                            distrib_thetaHat = [1:S.N] == theta;
-                        end
-                        if ~theta_is_obs
-                            distrib_thetaHat = S.mu(:,rho+1,lambda);
-                        end
+                        distrib_thetaHat = S.mu(:,rho+1,lambda);
                     end
-                    
+                    %                    
                     thetaHat = sum(cumsum(distrib_thetaHat) < rand) + 1;
                     %
                     index = map4to1(theta,thetaHat,rho,lambda,S);
                     %
-                    x = lmi_solution.cloopA(:,:,index)*x + S.E(:,e,theta)*(k==1);
+                    x = lmi_solution.cloopA(:,:,index)*x;
                     z  = lmi_solution.cloopC(:,:,index)*x;
                     h2 = h2 + z'*z;
                 end
@@ -154,7 +164,6 @@ montecarlo = S.montecarlo;
 riccati_solution = S.riccati_solution;
 %
 H2 = zeros(1,montecarlo.repetitions);
-z = zeros(size(S.C,1),1);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
@@ -163,11 +172,16 @@ for rep = 1:montecarlo.repetitions
         for theta0 = find(S.pi)
             mkchain = get_markov_chain(S.Prob,montecarlo.horizon,theta0);
             for e = 1:size(S.E,2)
-                z = z*0;
                 x = x*0;
+                %%%% FOR K == 1
+                theta = mkchain(1);
+                x = riccati_solution.cloopA(:,:,theta)*x + S.E(:,e,theta);
+                z  = riccati_solution.cloopC(:,:,theta)*x;
+                h2 = h2 + z'*z;
+                %%%% FOR K  > 1
                 for k = 1:numel(mkchain)
                     theta = mkchain(k);
-                    x = riccati_solution.cloopA(:,:,theta)*x + S.E(:,e,theta)*(k==1);
+                    x = riccati_solution.cloopA(:,:,theta)*x;
                     z  = riccati_solution.cloopC(:,:,theta)*x;
                     h2 = h2 + z'*z;
                 end
@@ -195,7 +209,6 @@ montecarlo = S.montecarlo;
 doval_solution = S.doval_solution;
 %
 H2 = zeros(1,montecarlo.repetitions);
-z = zeros(size(S.C,1),1);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
@@ -204,12 +217,18 @@ for rep = 1:montecarlo.repetitions
         for theta0 = find(S.pi)
             mkchain = get_markov_chain(S.Prob,montecarlo.horizon,theta0);
             for e = 1:size(S.E,2)
-                z = z*0;
                 x = x*0;
-                for k = 1:numel(mkchain)
+                %%%% FOR K == 1
+                theta = mkchain(1);
+                thetaHat = theta*(theta<=S.No) + (S.No+1)*(theta>S.No);
+                x = doval_solution.cloopA(:,:,theta,thetaHat)*x + S.E(:,e,theta);
+                z  = doval_solution.cloopC(:,:,theta,thetaHat)*x;
+                h2 = h2 + z'*z;
+                %%%% FOR K  > 1
+                for k = 2:numel(mkchain)
                     theta = mkchain(k);
                     thetaHat = theta*(theta<=S.No) + (S.No+1)*(theta>S.No);
-                    x = doval_solution.cloopA(:,:,theta,thetaHat)*x + S.E(:,e,theta)*(k==1);
+                    x = doval_solution.cloopA(:,:,theta,thetaHat)*x; 
                     z  = doval_solution.cloopC(:,:,theta,thetaHat)*x;
                     h2 = h2 + z'*z;
                 end
