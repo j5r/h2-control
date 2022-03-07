@@ -12,17 +12,25 @@ end
 %
 Struct = parse_data(Struct); %OK-------------------------------------------
 %
+Struct = our_model_create_phisical_states(Struct); %OK---------------------
+%
 Struct = our_model_validate_states(Struct, false); %OK---------------------
 %
 Struct = our_model_solve_lmis(Struct); %OK---------------------------------
 %
 Struct = compute_riccati_gains(Struct); %OK--------------------------------
 %
-Struct = compute_controllability_gramian(Struct,1e5); %OK------------------
+Struct = doval_solve_lmis(Struct); %OK
 %
-Struct = compute_observability_gramian(Struct,1e5); %OK--------------------
+Struct = compute_controllability_gramian(Struct,1e4); %OK------------------
+%
+Struct = compute_observability_gramian(Struct,1e4); %OK--------------------
 %
 Struct = are_gains_stabilizant(Struct); %OK--------------------------------
 %
-Struct = compute_h2(Struct); %OK-------------------------------------------
+Struct = compute_h2_via_gramians(Struct); %OK-------------------------------------------
+% %
+Struct = config_montecarlo(Struct,3e3,1e5,1);
+%
+Struct = compute_h2_via_montecarlo(Struct);
 end

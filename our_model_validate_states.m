@@ -17,22 +17,9 @@ fprintf('\n --> OUR MODEL: VALIDATE STATES...\n');
 if nargin == 1
     i_will_overwrite_pihat_or_mu = false;
 end
-Struct = our_model_create_phisical_states(Struct);
-%
-valid_states = Struct.valid_states;
-%
-% validating the comunicating states, regarding theta
-pi = Struct.pi;
-for k = 1:Struct.N+1
-    pi = [pi; Struct.pi * (Struct.Prob^k)];
+if ~isfield(Struct,'valid_states')
+    error('The field [valid_states] was not found in the struct.');
 end
-thetas_to_discard = find(sum(pi)==0);
-%
-for theta = thetas_to_discard
-    valid_states( valid_states(:,1)==theta ,:) = [];
-end
-%
-Struct.valid_states = valid_states;
 %
 %
 % If you intend to overwrite pihat or mu externally, it will change both
@@ -48,14 +35,12 @@ if ~i_will_overwrite_pihat_or_mu
     n_augm_states = size(Struct.augm_Prob,1);
     sum_augm_Prob = zeros(n_augm_states, n_augm_states);
     for k = 0:n_augm_states
-        sum_augm_Prob = Struct.augm_Prob^k;
+        sum_augm_Prob = sum_augm_Prob + Struct.augm_Prob^k;
     end
     %
-    never_visited_states = ~ sum(Struct.augm_pi * sum_augm_Prob);
-    %
-    valid_states(never_visited_states,:) = [];
-    %
-    Struct.valid_states = valid_states;
+    never_visited_states =  ~(Struct.augm_pi * sum_augm_Prob);
+    %    
+    Struct.valid_states(never_visited_states,:) = [];
     %
     % dropping out these fields
     Struct = rmfield(Struct,{'augm_pi','augm_Prob'});

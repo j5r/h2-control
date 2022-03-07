@@ -1,7 +1,7 @@
 %
 % By Junior R. Ribeiro, jrodrib@usp.br, 18-fev-2022
 %
-% Struct = compute_riccati_gains(Struct,max_iteration)
+% Struct = compute_riccati_gains(Struct,max_iteration?1e4)
 %
 %   This function computes the optimal gains by coupled Riccati equations.
 %
@@ -17,7 +17,7 @@ X = zeros(n, n, n_states);
 % constants
 tolerance = 1e-10;
 if nargin == 1
-    max_iteration = 1.5e3;
+    max_iteration = 1e4;
 end
 INF = 1e100;
 %
@@ -73,6 +73,8 @@ riccati_struct.X = X;
 riccati_struct.K = F;
 riccati_struct.cloopA = cloopA;
 riccati_struct.cloopC = cloopC;
+riccati_struct.help = {'1# cloopA(:,:,theta) = A(:,:,theta) + B(:,:,theta) * K(:,:,theta)';
+    '2# cloopC(:,:,theta) = C(:,:,theta) + D(:,:,theta) * K(:,:,theta)'};
 S.riccati_solution = riccati_struct;
 %
 if warning_after

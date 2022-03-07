@@ -4,7 +4,7 @@
 % Struct = are_gains_stabilizant(Struct)
 %
 %   This function computes the operator A1 Eq.3.12b
-%   (OLVCosta,MDFragoso,RPMarques. Discrete-time MJLS, p.34)
+%   (https://link.springer.com/book/10.1007/b138575, p.34)
 %   responsable for the MS-stability. This operator is appended to the
 %   struct.
 %
@@ -20,6 +20,8 @@ Struct = are_lmi_gains_stabilizant(Struct);
 % riccati
 Struct = are_riccati_gains_stabilizant(Struct);
 %
+% doval
+Struct = are_doval_gains_stabilizant(Struct);
 fprintf('...DONE.\n');
 end
 %
@@ -74,6 +76,29 @@ if isfield(Struct,'riccati_solution')
     %
     Struct.riccati_solution.operatorA_Osvaldo = operatorA;
     Struct.riccati_solution.max_eigs_opA_Osvaldo = max(abs(eig( Struct.riccati_solution.operatorA_Osvaldo )));
+    %
+end
+end
+%
+%
+%
+%
+function Struct = are_doval_gains_stabilizant(Struct)
+if isfield(Struct,'doval_solution')
+    n_states = Struct.N;
+    n = size(Struct.A,1);
+    %
+    diagD = [];
+    for ell = 1:n_states
+        thetaHat = ell * (ell <= Struct.No) + (Struct.No+1)*(ell>Struct.No);
+        diagD = blkdiag( diagD, ...
+            kron(Struct.doval_solution.cloopA(:,:,ell,thetaHat), Struct.doval_solution.cloopA(:,:,ell,thetaHat)) );
+    end
+    %
+    operatorA = kron(Struct.Prob', eye(n^2) ) * diagD;
+    %
+    Struct.doval_solution.operatorA_Osvaldo = operatorA;
+    Struct.doval_solution.max_eigs_opA_Osvaldo = max(abs(eig( Struct.doval_solution.operatorA_Osvaldo )));
     %
 end
 end

@@ -147,6 +147,9 @@ for ell = 1:n_states
 end
 lmi_struct.cloopA = cloopA;
 lmi_struct.cloopC = cloopC;
+lmi_struct.help = {'1# cloopA(:,:,ell) = A(:,:,theta) + B(:,:,theta) * K(:,:,thetaHat,rho+1,lambda)';
+    '2# cloopC(:,:,ell) = C(:,:,theta) + D(:,:,theta) * K(:,:,thetaHat,rho+1,lambda)';
+    '3# [ell] is a composed state (theta,thetaHat,rho,lambda) in valid_states'};
 Struct.lmi_solution = lmi_struct;
 %
 fprintf('...DONE.\n');

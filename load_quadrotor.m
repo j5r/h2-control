@@ -34,16 +34,18 @@ D(:,:,4) =   D(:,:,1);
 %%%%%%%%%%%%
 Prob = P;
 pi = pi00;
-T = 3;
+T = 2;
 No = 2;
 N = numel(pi);
 pihat = eye(N,No+1);
-pihat(:,No+1) = pi(:);
-pihat(1:No,No+1) = 0;
-if sum(pihat(N,No+1)) > 0
-   pihat(:,No+1) = pihat(:,No+1)/sum(pihat(:,No+1));
-else
-    pihat(No+1:N,No+1) = 1/(N-No);
-end
+% pihat(:,No+1) = pi(:);
+% pihat(1:No,No+1) = 0;
+% if sum(pihat(N,No+1)) > 0
+%    pihat(:,No+1) = pihat(:,No+1)/sum(pihat(:,No+1));
+% else
+%     pihat(No+1:N,No+1) = 1/(N-No);
+% end
+
+
 S = parse_data(A,B,E,C,D,Prob,pi,pihat,T,No);
 end

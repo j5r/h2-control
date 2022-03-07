@@ -1,7 +1,7 @@
 %
 % By Junior R. Ribeiro, jrodrib@usp.br, 18-fev-2022
 %
-% Struct = generate_sample(N)
+% Struct = generate_sample(N?[3~8])
 %
 %   This function randomizes some parameters and uses the function
 %   'parse_data(...)' to return a struct. Its unique optional argument
