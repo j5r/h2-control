@@ -30,7 +30,7 @@ Struct = are_gains_stabilizant(Struct); %OK--------------------------------
 %
 Struct = compute_h2_via_gramians(Struct); %OK-------------------------------------------
 % %
-Struct = config_montecarlo(Struct,3e3,1e5,1);
+Struct = config_montecarlo(Struct,1e3,1e3,1);
 %
 Struct = compute_h2_via_montecarlo(Struct);
 end

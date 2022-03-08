@@ -60,7 +60,7 @@ if isfield(lmi_solution,'obsv_gramian')
         %
         OPER_E_i = zeros(size(S.A,1), size(S.A,1));
         for j = 1:n_states
-            OPER_E_i = OPER_E_i + S.augm_Prob(i,j) * S.lmi_solution.ctrl_gramian(:,:,j);
+            OPER_E_i = OPER_E_i + S.augm_Prob(i,j) * S.lmi_solution.obsv_gramian(:,:,j);
         end
         %
         h2 = h2 + S.augm_pi(i) * trace(S.E(:,:,theta)' * OPER_E_i * S.E(:,:,theta));
@@ -108,7 +108,7 @@ if isfield(riccati_solution,'obsv_gramian')
         %
         OPER_E_i = zeros(size(S.A,1), size(S.A,1));
         for j = 1:n_states
-            OPER_E_i = OPER_E_i + S.Prob(i,j) * S.riccati_solution.ctrl_gramian(:,:,j);
+            OPER_E_i = OPER_E_i + S.Prob(i,j) * S.riccati_solution.obsv_gramian(:,:,j);
         end
         %
         h2 = h2 + S.augm_pi(i) * trace(S.E(:,:,theta)' * OPER_E_i * S.E(:,:,theta));
@@ -154,7 +154,7 @@ if isfield(doval_solution,'obsv_gramian')
         %
         OPER_E_i = zeros(size(S.A,1), size(S.A,1));
         for j = 1:n_states
-            OPER_E_i = OPER_E_i + S.Prob(i,j) * S.doval_solution.ctrl_gramian(:,:,j);
+            OPER_E_i = OPER_E_i + S.Prob(i,j) * S.doval_solution.obsv_gramian(:,:,j);
         end
         %
         h2 = h2 + S.pi(i) * trace(S.E(:,:,i)' * OPER_E_i * S.E(:,:,i));

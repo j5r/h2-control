@@ -44,26 +44,31 @@ montecarlo = S.montecarlo;
 lmi_solution = S.lmi_solution;
 %
 H2 = zeros(1,montecarlo.repetitions);
-z = zeros(size(S.C,1),1);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
+    h2_sum = 0;
     percent = 0;
     for mc = 1:montecarlo.MC
         for xi0 = find(S.augm_pi)
             mkchain = get_markov_chain(S.augm_Prob,montecarlo.horizon,xi0);
-            for e = 1:size(S.E,2)
-                z = z*0;                
+            for e = 1:size(S.E,2)              
                 x = x*0;
-                for k = 1:numel(mkchain)
+                %%%% FOR K == 1
+                xi = mkchain(1);
+                [theta,~,~,~] = map1to4(xi,S);
+                x = lmi_solution.cloopA(:,:,xi)*x + S.E(:,e,theta);
+                z  = lmi_solution.cloopC(:,:,xi)*x;
+                h2 = h2 + z'*z;
+                %%%% FOR K  > 1
+                for k = 2:numel(mkchain)
                     xi = mkchain(k);
-                    [theta,~,~,~] = map1to4(xi,S);
-                    x = lmi_solution.cloopA(:,:,xi)*x + S.E(:,e,theta)*(k==1);
+                    x = lmi_solution.cloopA(:,:,xi)*x;
                     z  = lmi_solution.cloopC(:,:,xi)*x;
                     h2 = h2 + z'*z;
                 end
             end
-            h2 = h2 * S.augm_pi(xi0)/montecarlo.MC;
+            h2_sum = h2_sum + h2 * S.augm_pi(xi0)/montecarlo.MC;
         end
         %
         if mod(mc,ceil(montecarlo.MC/7))==0
@@ -71,7 +76,7 @@ for rep = 1:montecarlo.repetitions
             fprintf('\n\tOur LMI: Monte Carlo simulation %d%% done...',percent);
         end
     end
-    H2(rep) = sqrt(h2);
+    H2(rep) = sqrt(h2_sum);
     fprintf('\n');
 end
 S.lmi_solution.h2.via_montecarlo.augm_sys.h2 = H2;
@@ -89,6 +94,7 @@ H2 = zeros(1,montecarlo.repetitions);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
+    h2_sum = 0;
     percent = 0;
     for mc = 1:montecarlo.MC
         for theta0 = find(S.pi)
@@ -141,7 +147,7 @@ for rep = 1:montecarlo.repetitions
                     h2 = h2 + z'*z;
                 end
             end
-            h2 = h2 * S.pi(theta0)/montecarlo.MC;
+            h2_sum = h2_sum + h2 * S.pi(theta0)/montecarlo.MC;            
         end
         %
         if mod(mc,ceil(montecarlo.MC/8))==0
@@ -149,7 +155,7 @@ for rep = 1:montecarlo.repetitions
             fprintf('\n\tOur LMI: Monte Carlo simulation %d%% done...',percent);
         end
     end
-    H2(rep) = sqrt(h2);
+    H2(rep) = sqrt(h2_sum);
     fprintf('\n');
 end
 S.lmi_solution.h2.via_montecarlo.simple_sys.h2 = H2;
@@ -167,6 +173,7 @@ H2 = zeros(1,montecarlo.repetitions);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
+    h2_sum = 0;
     percent = 0;
     for mc = 1:montecarlo.MC
         for theta0 = find(S.pi)
@@ -186,7 +193,7 @@ for rep = 1:montecarlo.repetitions
                     h2 = h2 + z'*z;
                 end
             end
-            h2 = h2 * S.pi(theta0)/montecarlo.MC;
+            h2_sum = h2_sum + h2 * S.pi(theta0)/montecarlo.MC;
         end
         %
         if mod(mc,ceil(montecarlo.MC/7))==0
@@ -194,7 +201,7 @@ for rep = 1:montecarlo.repetitions
             fprintf('\n\tRiccati: Monte Carlo simulation %d%% done...',percent);
         end
     end
-    H2(rep) = sqrt(h2);
+    H2(rep) = sqrt(h2_sum);
     fprintf('\n');
 end
 S.riccati_solution.h2.via_montecarlo.h2 = H2;
@@ -212,6 +219,7 @@ H2 = zeros(1,montecarlo.repetitions);
 x = zeros(size(S.A,1),1);
 for rep = 1:montecarlo.repetitions
     h2 = 0;
+    h2_sum = 0;
     percent = 0;
     for mc = 1:montecarlo.MC
         for theta0 = find(S.pi)
@@ -233,7 +241,7 @@ for rep = 1:montecarlo.repetitions
                     h2 = h2 + z'*z;
                 end
             end
-            h2 = h2 * S.pi(theta0)/montecarlo.MC;
+            h2_sum = h2_sum + h2 * S.pi(theta0)/montecarlo.MC;
         end
         %
         if mod(mc,ceil(montecarlo.MC/7))==0
@@ -241,7 +249,7 @@ for rep = 1:montecarlo.repetitions
             fprintf('\n\tDo Val: Monte Carlo simulation %d%% done...',percent);
         end
     end
-    H2(rep) = sqrt(h2);
+    H2(rep) = sqrt(h2_sum);
     fprintf('\n');
 end
 S.doval_solution.h2.via_montecarlo.h2 = H2;
