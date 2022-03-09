@@ -4,35 +4,51 @@ if ~isfield(S,'montecarlo')
     error('Please, config_montecarlo first.');
 end
 %
-fprintf('\n --> COMPUTE H2 VIA MONTECARLO...\n');
-if isfield(S,'lmi_solution')
-    fprintf('\n ****** COMPUTING H2 FOR OUR LMI SOLUTION...\n');
-    disp(' ------ Simple system...');
-    tic
-    S = compute_h2_via_montecarlo_for_lmi_solution_simple_system(S);
-    toc
-    disp(' ------ Augmented system...');  
-    tic
-    S = compute_h2_via_montecarlo_for_lmi_solution_augm_system(S);
-    toc   
-    fprintf('\b\b DONE.\n')
+try
+    parpool;
+catch
 end
-
-if isfield(S,'riccati_solution')
-    fprintf('\n ****** COMPUTING H2 FOR RICCATI SOLUTION...\n')
-    tic
-    S = compute_h2_via_montecarlo_for_riccati_solution(S);
-    toc
-    fprintf('\b\b DONE.\n')
+parfor item=1:4
+    fprintf('\n --> COMPUTE H2 VIA MONTECARLO...\n');
+    if isfield(S,'lmi_solution') && item == 1
+        fprintf('\n ****** COMPUTING H2 FOR OUR LMI SOLUTION...\n');
+        disp(' ------ Simple system...');
+        tic
+        Struct_{item} = compute_h2_via_montecarlo_for_lmi_solution_simple_system(S);
+        toc
+    end
+    %
+    if isfield(S,'lmi_solution') && item == 2
+        disp(' ------ Augmented system...');
+        tic
+        Struct_{item} = compute_h2_via_montecarlo_for_lmi_solution_augm_system(S);
+        toc
+        fprintf('\b\b DONE.\n')
+    end
+    %
+    if isfield(S,'riccati_solution') && item == 3
+        fprintf('\n ****** COMPUTING H2 FOR RICCATI SOLUTION...\n')
+        tic
+        Struct_{item} = compute_h2_via_montecarlo_for_riccati_solution(S);
+        toc
+        fprintf('\b\b DONE.\n')
+    end
+    %
+    if isfield(S,'doval_solution') && item == 4
+        fprintf('\n ****** COMPUTING H2 FOR DO VAL SOLUTION...\n')
+        tic
+        Struct_{item} = compute_h2_via_montecarlo_for_doval_solution(S);
+        toc
+        fprintf('\b\b DONE.\n')
+    end
 end
+%%%%%%%%%%% retrieving data
 %
-if isfield(S,'doval_solution')
-    fprintf('\n ****** COMPUTING H2 FOR DO VAL SOLUTION...\n')
-    tic
-    S = compute_h2_via_montecarlo_for_doval_solution(S);
-    toc
-    fprintf('\b\b DONE.\n')
-end
+S.lmi_solution.h2.via_montecarlo.simple_sys = Struct_{1}.lmi_solution.h2.via_montecarlo.simple_sys;
+S.lmi_solution.h2.via_montecarlo.augm_sys = Struct_{2}.lmi_solution.h2.via_montecarlo.augm_sys;
+S.riccati_solution.h2.via_montecarlo = Struct_{3}.riccati_solution.h2.via_montecarlo;
+S.doval_solution.h2.via_montecarlo = Struct_{4}.doval_solution.h2.via_montecarlo;
+%
 fprintf(' ...DONE.\n');
 end
 %
@@ -52,7 +68,7 @@ for rep = 1:montecarlo.repetitions
     for mc = 1:montecarlo.MC
         for xi0 = find(S.augm_pi)
             mkchain = get_markov_chain(S.augm_Prob,montecarlo.horizon,xi0);
-            for e = 1:size(S.E,2)              
+            for e = 1:size(S.E,2)
                 x = x*0;
                 %%%% FOR K == 1
                 xi = mkchain(1);
@@ -99,10 +115,10 @@ for rep = 1:montecarlo.repetitions
     for mc = 1:montecarlo.MC
         for theta0 = find(S.pi)
             mkchain = get_markov_chain(S.Prob,montecarlo.horizon,theta0);
-            for e = 1:size(S.E,2)              
+            for e = 1:size(S.E,2)
                 x = x*0;
                 rho = 0;
-                lambda = 1;                
+                lambda = 1;
                 %%%% FOR K == 1
                 theta = mkchain(1);
                 theta_is_obs = theta <= S.No;
@@ -115,7 +131,7 @@ for rep = 1:montecarlo.repetitions
                 else
                     distrib_thetaHat = S.pihat(:,S.No+1);
                 end
-                %                
+                %
                 thetaHat = sum(cumsum(distrib_thetaHat) < rand) + 1;
                 %
                 index = map4to1(theta,thetaHat,rho,lambda,S);
@@ -124,7 +140,7 @@ for rep = 1:montecarlo.repetitions
                 z  = lmi_solution.cloopC(:,:,index)*x;
                 h2 = h2 + z'*z;
                 %
-                %%%% FOR K  > 1                
+                %%%% FOR K  > 1
                 for k = 2:numel(mkchain)
                     theta = mkchain(k);
                     theta_is_obs = theta <= S.No;
@@ -137,7 +153,7 @@ for rep = 1:montecarlo.repetitions
                     else
                         distrib_thetaHat = S.mu(:,rho+1,lambda);
                     end
-                    %                    
+                    %
                     thetaHat = sum(cumsum(distrib_thetaHat) < rand) + 1;
                     %
                     index = map4to1(theta,thetaHat,rho,lambda,S);
@@ -147,7 +163,7 @@ for rep = 1:montecarlo.repetitions
                     h2 = h2 + z'*z;
                 end
             end
-            h2_sum = h2_sum + h2 * S.pi(theta0)/montecarlo.MC;            
+            h2_sum = h2_sum + h2 * S.pi(theta0)/montecarlo.MC;
         end
         %
         if mod(mc,ceil(montecarlo.MC/8))==0
@@ -236,7 +252,7 @@ for rep = 1:montecarlo.repetitions
                 for k = 2:numel(mkchain)
                     theta = mkchain(k);
                     thetaHat = theta*(theta<=S.No) + (S.No+1)*(theta>S.No);
-                    x = doval_solution.cloopA(:,:,theta,thetaHat)*x; 
+                    x = doval_solution.cloopA(:,:,theta,thetaHat)*x;
                     z  = doval_solution.cloopC(:,:,theta,thetaHat)*x;
                     h2 = h2 + z'*z;
                 end
