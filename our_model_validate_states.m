@@ -4,7 +4,7 @@
 % Struct = our_model_validate_states(Struct,i_will_overwrite_pihat_or_mu)
 %
 %   This function makes the validation of the composed states (theta,
-%   thetaHat, rho, lambda) taking into account the communication between 
+%   thetaHat, rho, lambda) taking into account the communication between
 %   them in the sense of a Markov chain, that is, the states which are
 %   never visited are discarded.
 %
@@ -39,7 +39,7 @@ if ~i_will_overwrite_pihat_or_mu
     end
     %
     never_visited_states =  ~(Struct.augm_pi * sum_augm_Prob);
-    %    
+    %
     Struct.valid_states(never_visited_states,:) = [];
     %
     % dropping out these fields

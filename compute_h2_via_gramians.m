@@ -148,7 +148,7 @@ if ~isfield(S,'doval_solution')
     return
 end
 doval_solution = S.doval_solution;
-if isfield(doval_solution,'obsv_gramian')     
+if isfield(doval_solution,'obsv_gramian')
     h2 = 0;
     for i = 1:n_states
         %

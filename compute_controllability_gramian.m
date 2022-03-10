@@ -87,7 +87,7 @@ while error_ > tolerance && iterations < max_iteration
     Sc_previous = Sc;
 end
 S.lmi_solution.ctrl_gramian = Sc;
-disp('{iterations, norm(Sc - previousSc)}')
+disp('   {iterations, norm(Sc - previousSc)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
@@ -127,7 +127,7 @@ while error_ > tolerance && iterations < max_iteration
     %
     for j = 1:n_states
         summation = Sc(:,:,j)*0;
-        for i = 1:n_states            
+        for i = 1:n_states
             summation = summation + S.Prob(i,j) * ...
                 [cloopA(:,:,i)*Sc_previous(:,:,i)*cloopA(:,:,i)' + S.pi(i) * S.E(:,:,i) * S.E(:,:,i)'];
         end
@@ -142,7 +142,7 @@ while error_ > tolerance && iterations < max_iteration
     Sc_previous = Sc;
 end
 S.riccati_solution.ctrl_gramian = Sc;
-disp('{iterations, norm(Sc - previousSc)}')
+disp('   {iterations, norm(Sc - previousSc)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
@@ -198,7 +198,7 @@ while error_ > tolerance && iterations < max_iteration
     Sc_previous = Sc;
 end
 S.doval_solution.ctrl_gramian = Sc;
-disp('{iterations, norm(Sc - previousSc)}')
+disp('   {iterations, norm(Sc - previousSc)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
@@ -212,4 +212,3 @@ elseif iterations >= max_iteration
 end
 fprintf('.\n\n');
 end
-

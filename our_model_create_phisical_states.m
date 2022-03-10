@@ -5,7 +5,7 @@
 %
 %   This function creates a new field on Struct, called 'valid_states'.
 %   These valid_states stores the tuples (theta,thetaHat,rho,lambda) which
-%   does make sense according to their definitions. 
+%   does make sense according to their definitions.
 %
 
 function Struct = our_model_create_phisical_states(Struct)

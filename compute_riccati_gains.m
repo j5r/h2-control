@@ -58,7 +58,7 @@ while error_ > tolerance && iterations < max_iteration
     X_previous = X;
 end
 %
-disp('{iterations, norm(X - previousX)}')
+disp('   {iterations, norm(X - previousX)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 % computing gains

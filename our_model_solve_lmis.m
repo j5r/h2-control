@@ -57,9 +57,9 @@ for thetaHat = 1:N
     for rho = 0:T-1
         for lambda = 1:No
             intersection_with_valids = intersect(Struct.valid_states(:,2:4), [thetaHat, rho, lambda], 'rows');
-            if ~isempty(intersection_with_valids) 
+            if ~isempty(intersection_with_valids)
                 % allocating only if it is valid
-                LMI_G{thetaHat,rho+1,lambda} = sdpvar(n_G(1), n_G(2));                
+                LMI_G{thetaHat,rho+1,lambda} = sdpvar(n_G(1), n_G(2));
                 LMI_F{thetaHat,rho+1,lambda} = sdpvar(n_F(1), n_F(2));
                 % var G being positive-definite
                 constraints = [constraints, LMI_G{thetaHat,rho+1,lambda} >= 0];
@@ -69,8 +69,8 @@ for thetaHat = 1:N
 end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Constraints of the LMI
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%% In order to turn off some LMIs, we compute a scalar to
 %%%%%%%%%%%%% multiply them. If some state 'ell' is never visited, its
 %%%%%%%%%%%%% propagate distribution is always zero, and so, we multiply
@@ -82,7 +82,7 @@ summation_augm_P = zeros(n_states, n_states);
 for ell = 0:n_states
     summation_augm_P =  summation_augm_P + Struct.augm_Prob^ell ;
 end
- weights = (Struct.augm_pi(:)' * summation_augm_P);
+weights = (Struct.augm_pi(:)' * summation_augm_P);
 %
 %
 for ell = 1:n_states
@@ -98,21 +98,21 @@ for ell = 1:n_states
     %
     % LMI blocks regarding R
     blk_R11 = LMI_R{ell} - Struct.augm_pi(ell) * Struct.E(:,:,theta) * Struct.E(:,:,theta)';
-    blk_R12 = Struct.A(:,:,theta) * LMI_G{thetaHat,rho+1,lambda} + Struct.B(:,:,theta) *  LMI_F{thetaHat,rho+1,lambda};    
+    blk_R12 = Struct.A(:,:,theta) * LMI_G{thetaHat,rho+1,lambda} + Struct.B(:,:,theta) *  LMI_F{thetaHat,rho+1,lambda};
     %
     % LMI blocks regarding W
     blk_W11 = LMI_W{ell};
     blk_W12 = Struct.C(:,:,theta) * LMI_G{thetaHat,rho+1,lambda} + Struct.D(:,:,theta) *  LMI_F{thetaHat,rho+1,lambda};
-    %    
+    %
     % adding constraints
     constraints = [constraints, weights(ell) * [ blk_R11,  blk_R12; ...
-                                          blk_R12',  blk__22] >= 0]; 
+        blk_R12',  blk__22] >= 0];
     constraints = [constraints,  [ blk_W11,  blk_W12; ...
-                                  blk_W12', blk__22] >= 0];    
+        blk_W12', blk__22] >= 0];
 end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SOLVING
-% 
+%
 solvesdp(constraints,objective_function);
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RETRIEVING SOLUTION

@@ -1,4 +1,4 @@
- %
+%
 % By Junior R. Ribeiro, jrodrib@usp.br, 01-mar-2022
 %
 % Struct = compute_observability_gramian(Struct,max_iteration?1e4)
@@ -6,11 +6,13 @@
 %   This function computes the observability gramian for the
 %   lmi_solution, riccati_solution and doval_solution.
 %   (https://link.springer.com/book/10.1007/b138575, Eq.4.40)
-%  
+%
 
 function S = compute_observability_gramian(S,max_iteration)
-fprintf('\n --> COMPUTE OBSERVABILITY GRAMIAN... \n')
-validate_compute_observability_gramian(S)
+fprintf('\n --> COMPUTE OBSERVABILITY GRAMIAN... \n');
+%
+validate_compute_observability_gramian(S);
+%
 if nargin == 1
     max_iteration = 1e4;
 end
@@ -23,6 +25,7 @@ S = compute_observability_gramian_for_doval_solution(S,max_iteration);
 %
 fprintf('...DONE.\n')
 end
+%
 %
 %
 %
@@ -76,7 +79,7 @@ while error_ > tolerance && iterations < max_iteration
     So_previous = So;
 end
 S.lmi_solution.obsv_gramian = So;
-disp('{iterations, norm(So - previousSo)}')
+disp('   {iterations, norm(So - previousSo)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
@@ -102,7 +105,7 @@ So = zeros(n, n, n_states);
 % constants
 tolerance = 1e-10;
 if nargin == 1
-max_iteration = 5e2;
+    max_iteration = 5e2;
 end
 INF = 1e100;
 %
@@ -132,7 +135,7 @@ while error_ > tolerance && iterations < max_iteration
     So_previous = So;
 end
 S.riccati_solution.obsv_gramian = So;
-disp('{iterations, norm(So - previousSo)}')
+disp('   {iterations, norm(So - previousSo)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after
@@ -187,7 +190,7 @@ while error_ > tolerance && iterations < max_iteration
     So_previous = So;
 end
 S.doval_solution.obsv_gramian = So;
-disp('{iterations, norm(So - previousSo)}')
+disp('   {iterations, norm(So - previousSo)}')
 fprintf('   [%d of %d]        [%g]\n',iterations,max_iteration, error_);
 %
 if warning_after

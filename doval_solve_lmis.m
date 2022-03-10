@@ -85,10 +85,10 @@ for theta = 1:N
         %
         % adding constraints
         constraints = [constraints,  [ blk_R11,  blk_R12; ...
-                                      blk_R12',  blk__22] >= 0];
+            blk_R12',  blk__22] >= 0];
         %
         constraints = [constraints,  [ blk_W11,  blk_W12; ...
-                                      blk_W12', blk__22] >= 0];
+            blk_W12', blk__22] >= 0];
     end
 end
 %
@@ -127,8 +127,8 @@ cloopA = zeros(n, n, N, No+1);
 cloopC = zeros(r, n, N, No+1);
 for theta = 1:N
     for thetaHat = 1:No+1
-    cloopA(:,:,theta,thetaHat) = Struct.A(:,:,theta) + Struct.B(:,:,theta) * K(:,:,thetaHat);
-    cloopC(:,:,theta,thetaHat) = Struct.C(:,:,theta) + Struct.D(:,:,theta) * K(:,:,thetaHat);
+        cloopA(:,:,theta,thetaHat) = Struct.A(:,:,theta) + Struct.B(:,:,theta) * K(:,:,thetaHat);
+        cloopC(:,:,theta,thetaHat) = Struct.C(:,:,theta) + Struct.D(:,:,theta) * K(:,:,thetaHat);
     end
 end
 doval_struct.cloopA = cloopA;
