@@ -1,4 +1,4 @@
-%
+% 
 % By Junior R. Ribeiro, jrodrib@usp.br, 22-fev-2022
 %
 % Struct = are_gains_stabilizant(Struct)
